@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 directory(GCOV_BUILD_OUTPUT_PATH)
 directory(GCOV_RESULTS_PATH)
 directory(GCOV_ARTIFACTS_PATH)
@@ -10,12 +12,11 @@ CLEAN.include(File.join(GCOV_DEPENDENCIES_PATH, '*'))
 
 CLOBBER.include(File.join(GCOV_BUILD_PATH, '**/*'))
 
-rule(/#{GCOV_BUILD_OUTPUT_PATH}\/#{'.+\\' + EXTENSION_OBJECT}$/ => [
+rule(%r{#{GCOV_BUILD_OUTPUT_PATH}/#{'.+\\' + EXTENSION_OBJECT}$} => [
        proc do |task_name|
          @ceedling[:file_finder].find_compilation_input_file(task_name)
        end
      ]) do |object|
-
   if File.basename(object.source) =~ /^(#{PROJECT_TEST_FILE_PREFIX}|#{CMOCK_MOCK_PREFIX}|#{GCOV_IGNORE_SOURCES.join('|')})/i
     @ceedling[:generator].generate_object_file(
       TOOLS_GCOV_COMPILER,
@@ -30,7 +31,7 @@ rule(/#{GCOV_BUILD_OUTPUT_PATH}\/#{'.+\\' + EXTENSION_OBJECT}$/ => [
   end
 end
 
-rule(/#{GCOV_BUILD_OUTPUT_PATH}\/#{'.+\\' + EXTENSION_EXECUTABLE}$/) do |bin_file|
+rule(%r{#{GCOV_BUILD_OUTPUT_PATH}/#{'.+\\' + EXTENSION_EXECUTABLE}$}) do |bin_file|
   @ceedling[:generator].generate_executable_file(
     TOOLS_GCOV_LINKER,
     GCOV_SYM,
@@ -40,7 +41,7 @@ rule(/#{GCOV_BUILD_OUTPUT_PATH}\/#{'.+\\' + EXTENSION_EXECUTABLE}$/) do |bin_fil
   )
 end
 
-rule(/#{GCOV_RESULTS_PATH}\/#{'.+\\' + EXTENSION_TESTPASS}$/ => [
+rule(%r{#{GCOV_RESULTS_PATH}/#{'.+\\' + EXTENSION_TESTPASS}$} => [
        proc do |task_name|
          @ceedling[:file_path_utils].form_test_executable_filepath(task_name)
        end
@@ -48,7 +49,7 @@ rule(/#{GCOV_RESULTS_PATH}\/#{'.+\\' + EXTENSION_TESTPASS}$/ => [
   @ceedling[:generator].generate_test_results(TOOLS_GCOV_FIXTURE, GCOV_SYM, test_result.source, test_result.name)
 end
 
-rule(/#{GCOV_DEPENDENCIES_PATH}\/#{'.+\\' + EXTENSION_DEPENDENCIES}$/ => [
+rule(%r{#{GCOV_DEPENDENCIES_PATH}/#{'.+\\' + EXTENSION_DEPENDENCIES}$} => [
        proc do |task_name|
          @ceedling[:file_finder].find_compilation_input_file(task_name)
        end
@@ -153,16 +154,13 @@ end
 namespace UTILS_SYM do
   desc 'Create gcov code coverage html report (must run ceedling gcov first)'
   task GCOV_SYM do
-
-    if !File.directory? GCOV_ARTIFACTS_PATH
-      FileUtils.mkdir_p GCOV_ARTIFACTS_PATH
-    end
+    FileUtils.mkdir_p GCOV_ARTIFACTS_PATH unless File.directory? GCOV_ARTIFACTS_PATH
 
     filter = @ceedling[:configurator].project_config_hash[:gcov_html_report_filter] || GCOV_FILTER_EXPR
 
     if @ceedling[:configurator].project_config_hash[:gcov_html_report].nil?
       puts "In your project.yml, define: \n\n:gcov:\n  :html_report:\n\n to true or false to refine this feature."
-      puts "For now, assumimg you want an html report generated."
+      puts 'For now, assumimg you want an html report generated.'
       html_enabled = true
     else
       html_enabled = @ceedling[:configurator].project_config_hash[:gcov_html_report]
@@ -170,7 +168,7 @@ namespace UTILS_SYM do
 
     if @ceedling[:configurator].project_config_hash[:gcov_xml_report].nil?
       puts "In your project.yml, define: \n\n:gcov:\n  :xml_report:\n\n to true or false to refine this feature."
-      puts "For now, assumimg you want an xml report generated."
+      puts 'For now, assumimg you want an xml report generated.'
       xml_enabled = true
     else
       xml_enabled = @ceedling[:configurator].project_config_hash[:gcov_xml_report]
@@ -180,19 +178,16 @@ namespace UTILS_SYM do
       if @ceedling[:configurator].project_config_hash[:gcov_html_report_type] == 'basic'
         puts "Creating a basic html report of gcov results in #{GCOV_ARTIFACTS_FILE}..."
         command = @ceedling[:tool_executor].build_command_line(TOOLS_GCOV_POST_REPORT_BASIC, [], filter)
-        @ceedling[:tool_executor].exec(command[:line], command[:options])
       elsif @ceedling[:configurator].project_config_hash[:gcov_html_report_type] == 'detailed'
         puts "Creating a detailed html report of gcov results in #{GCOV_ARTIFACTS_FILE}..."
         command = @ceedling[:tool_executor].build_command_line(TOOLS_GCOV_POST_REPORT_ADVANCED, [], filter)
-        @ceedling[:tool_executor].exec(command[:line], command[:options])
-
       else
         puts "In your project.yml, define: \n\n:gcov:\n  :html_report_type:\n\n to basic or detailed to refine this feature."
-        puts "For now, just creating basic."
+        puts 'For now, just creating basic.'
         puts "Creating a basic html report of gcov results in #{GCOV_ARTIFACTS_FILE}..."
         command = @ceedling[:tool_executor].build_command_line(TOOLS_GCOV_POST_REPORT_BASIC, [], filter)
-        @ceedling[:tool_executor].exec(command[:line], command[:options])
       end
+      @ceedling[:tool_executor].exec(command[:line], command[:options])
     end
 
     if xml_enabled
@@ -201,6 +196,6 @@ namespace UTILS_SYM do
       @ceedling[:tool_executor].exec(command[:line], command[:options])
     end
 
-    puts "Done."
+    puts 'Done.'
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'ceedling/plugin'
 require 'ceedling/constants'
 require 'gcov_constants'
@@ -37,9 +39,7 @@ class Gcov < Plugin
   def post_test_fixture_execute(arg_hash)
     result_file = arg_hash[:result_file]
 
-    if (result_file =~ /#{GCOV_RESULTS_PATH}/) && !@result_list.include?(result_file)
-      @result_list << arg_hash[:result_file]
-    end
+    @result_list << arg_hash[:result_file] if (result_file =~ /#{GCOV_RESULTS_PATH}/) && !@result_list.include?(result_file)
   end
 
   def post_build
@@ -54,7 +54,7 @@ class Gcov < Plugin
 
     @ceedling[:plugin_reportinator].run_test_results_report(hash) do
       message = ''
-      message = 'Unit test failures.' if results[:counts][:failed] > 0
+      message = 'Unit test failures.' if results[:counts][:failed].positive?
       message
     end
 
@@ -97,15 +97,13 @@ class Gcov < Plugin
     end
 
     COLLECTION_ALL_SOURCE.each do |source|
-      unless coverage_sources.include?(source)
-        @ceedling[:streaminator].stdout_puts("Could not find coverage results for " + source + "\n")
-      end
+      @ceedling[:streaminator].stdout_puts('Could not find coverage results for ' + source + "\n") unless coverage_sources.include?(source)
     end
   end
 end
 
-# end blocks always executed following rake run
-END {
+# at_exit blocks always executed following rake run
+at_exit do
   # cache our input configurations to use in comparison upon next execution
   @ceedling[:cacheinator].cache_test_config(@ceedling[:setupinator].config_hash) if @ceedling[:task_invoker].invoked?(/^#{GCOV_TASK_ROOT}/)
-}
+end
