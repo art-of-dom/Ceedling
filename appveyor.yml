@@ -1,0 +1,25 @@
+---
+
+version: "{build}"
+
+
+install:
+  - set PATH=C:\Ruby%ruby_version%\bin;%PATH%
+  - choco install -y mingw
+  - git submodule update --init --recursive
+  - gem update --no-document --system
+  - gem install bundler -v 1.16.2 --no-document
+  - bundle install --jobs 3 --retry 3
+  - pip install gcovr
+
+build: off
+
+test_script:
+  - ruby -v
+  - gcc -v
+  - bundle exec rake ci
+
+environment:
+  matrix:
+    - ruby_version: '25'
+    - ruby_version: 25-x64
