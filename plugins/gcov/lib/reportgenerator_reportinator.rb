@@ -19,7 +19,7 @@ class ReportGeneratorReportinator
       STDOUT.flush
 
       # Cleanup any existing .gcov files to avoid reporting old coverage results.
-      for gcov_file in Dir.glob("*.gcov")
+      Dir.glob("*.gcov").each do |gcov_file|
         File.delete(gcov_file)
       end
 
@@ -33,7 +33,7 @@ class ReportGeneratorReportinator
 
       # Avoid running gcov on custom specified .gcno files.
       if !(rg_opts.nil?) && !(rg_opts[:gcov_exclude].nil?) && !(rg_opts[:gcov_exclude].empty?)
-        for gcno_exclude_expression in rg_opts[:gcov_exclude]
+        rg_opts[:gcov_exclude].each do |gcno_exclude_expression|
           if !(gcno_exclude_expression.nil?) && !(gcno_exclude_expression.empty?)
             # We want to filter .gcno files, not .gcov files.
             # We will generate .gcov files from .gcno files.
@@ -51,7 +51,7 @@ class ReportGeneratorReportinator
       gcno_exclude_regex = /(\/|\\)(#{gcno_exclude_str})\.gcno/
 
       # Generate .gcov files by running gcov on gcov notes files (*.gcno).
-      for gcno_filepath in Dir.glob(File.join(GCOV_BUILD_PATH, "**", "*.gcno"))
+      Dir.glob(File.join(GCOV_BUILD_PATH, "**", "*.gcno")).each do |gcno_filepath|
         match_data = gcno_filepath.match(gcno_exclude_regex)
         if match_data.nil? || (match_data[1].nil? && match_data[1].nil?)
           # Ensure there is a matching gcov data file.
@@ -72,7 +72,7 @@ class ReportGeneratorReportinator
       end
 
       # Cleanup .gcov files.
-      for gcov_file in Dir.glob("*.gcov")
+      Dir.glob("*.gcov").each do |gcov_file|
         File.delete(gcov_file)
       end
     end
@@ -127,7 +127,7 @@ class ReportGeneratorReportinator
     if !(opts.nil?) && !(opts[:gcov_reports].nil?) && !(opts[:gcov_reports].empty?)
       args += "\"-reporttypes:"
 
-      for report_type in opts[:gcov_reports]
+      opts[:gcov_reports].each do |report_type|
         rg_report_type = REPORT_TYPE_TO_REPORT_GENERATOR_REPORT_NAME[report_type.upcase]
         if !(rg_report_type.nil?)
           args += rg_report_type + ";"
@@ -164,7 +164,7 @@ class ReportGeneratorReportinator
 
     # Append custom arguments.
     if !(rg_opts[:custom_args].nil?) && !(rg_opts[:custom_args].empty?)
-      for custom_arg in rg_opts[:custom_args]
+      rg_opts[:custom_args].each do |custom_arg|
         args += "\"#{custom_arg}\" " unless custom_arg.nil? || custom_arg.empty?
       end
     end

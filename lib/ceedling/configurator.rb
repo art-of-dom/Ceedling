@@ -103,7 +103,7 @@ class Configurator
     cmock[:verbosity] = @project_verbosity                                                  if (cmock[:verbosity].nil?)
 
     cmock[:plugins] = []                             if (cmock[:plugins].nil?)
-    cmock[:plugins].map! { |plugin| plugin.to_sym }
+    cmock[:plugins].map!(&:to_sym)
     cmock[:plugins] << (:cexception)                 if (!cmock[:plugins].include?(:cexception) and (config[:project][:use_exceptions]))
     cmock[:plugins].uniq!
 
@@ -344,7 +344,7 @@ class Configurator
     @configurator_setup.build_constants_and_accessors(config_more_flattened, binding())
 
     # recreate constants & update accessors with new merged, base values
-    config_more.keys.each do |key|
+    config_more.each_key do |key|
       hash = { key => config_base[key] }
       @configurator_setup.build_constants_and_accessors(hash, binding())
     end

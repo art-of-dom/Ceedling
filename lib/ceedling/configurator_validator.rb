@@ -148,7 +148,7 @@ class ConfiguratorValidator
     redirect = config[tools][tool][:stderr_redirect]
     if (redirect.class == Symbol)
       # map constants and force to array of strings for runtime universality across ruby versions
-      if (not StdErrRedirect.constants.map{|constant| constant.to_s}.include?(redirect.to_s.upcase))
+      if (not StdErrRedirect.constants.map(&:to_s).include?(redirect.to_s.upcase))
         error = "ERROR: [:#{tools}][:#{tool}][:stderr_redirect][:#{redirect}] is not a recognized option " +
                 "{#{StdErrRedirect.constants.map{|constant| ':' + constant.to_s.downcase}.join(', ')}}."
         @stream_wrapper.stderr_puts(error) 

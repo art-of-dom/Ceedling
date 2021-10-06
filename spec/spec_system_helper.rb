@@ -23,7 +23,7 @@ end
 
 def convert_slashes(path)
   if RUBY_PLATFORM.downcase.match(/mingw|win32/)
-    path.gsub("/","\\")
+    path.tr("/","\\")
   else
     path
   end
