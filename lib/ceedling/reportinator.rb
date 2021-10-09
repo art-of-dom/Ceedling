@@ -1,7 +1,6 @@
 ##
 # Pretifies reports
 class Reportinator
-
   ##
   # Generates a banner for a message based on the length of the message or a
   # given width.
@@ -14,13 +13,12 @@ class Reportinator
   # ==== Examples
   #
   #    rp = Reportinator.new
-  #    rp.generate_banner("Hello world!") => "------------\nHello world!\n------------\n" 
-  #    rp.generate_banner("Hello world!", 3) => "---\nHello world!\n---\n" 
+  #    rp.generate_banner("Hello world!") => "------------\nHello world!\n------------\n"
+  #    rp.generate_banner("Hello world!", 3) => "---\nHello world!\n---\n"
   #
   #
-  def generate_banner(message, width=nil)
-    dash_count = ((width.nil?) ? message.strip.length : width)
-    return "#{'-' * dash_count}\n#{message}\n#{'-' * dash_count}\n"
+  def generate_banner(message, width = nil)
+    dash_count = (width.nil? ? message.strip.length : width)
+    "#{'-' * dash_count}\n#{message}\n#{'-' * dash_count}\n"
   end
-
 end

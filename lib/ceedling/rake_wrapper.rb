@@ -9,17 +9,16 @@ class Rake::Task
 end
 
 class RakeWrapper
-
   def initialize
     @makefile_loader = Rake::MakefileLoader.new # use our custom replacement noted above
   end
 
   def [](task)
-    return Rake::Task[task]
+    Rake::Task[task]
   end
 
   def task_list
-    return Rake::Task.tasks
+    Rake::Task.tasks
   end
 
   def create_file_task(file_task, dependencies)
@@ -29,5 +28,4 @@ class RakeWrapper
   def load_dependencies(dependencies_path)
     @makefile_loader.load(dependencies_path)
   end
-
 end

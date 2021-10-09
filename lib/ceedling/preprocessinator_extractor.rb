@@ -11,13 +11,13 @@ class PreprocessinatorExtractor
 
     base_name  = File.basename(filepath)
     not_pragma = /^#(?!pragma\b)/ # preprocessor directive that's not a #pragma
-    pattern    = /^#.*(\s|\/|\\|\")#{Regexp.escape(base_name)}/
+    pattern    = %r{^#.*(\s|/|\\|")#{Regexp.escape(base_name)}}
     found_file = false # have we found the file we care about?
 
     lines = []
     File.readlines(filepath).each do |line|
       line.encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
-      if found_file and not line =~ not_pragma
+      if found_file and !(line =~ not_pragma)
         lines << line
       else
         found_file = false
@@ -26,7 +26,7 @@ class PreprocessinatorExtractor
       found_file = true if line =~ pattern
     end
 
-    return lines
+    lines
   end
 
   def extract_base_file_from_preprocessed_directives(filepath)
@@ -37,7 +37,7 @@ class PreprocessinatorExtractor
     # '#'line containing file name of our filepath
 
     base_name  = File.basename(filepath)
-    pattern    = /^#.*(\s|\/|\\|\")#{Regexp.escape(base_name)}/
+    pattern    = %r{^#.*(\s|/|\\|")#{Regexp.escape(base_name)}}
     found_file = false # have we found the file we care about?
 
     lines = []
@@ -45,11 +45,9 @@ class PreprocessinatorExtractor
       line.encode!('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
       lines << line
 
-      if line =~ pattern
-        lines = []
-      end
+      lines = [] if line =~ pattern
     end
 
-    return lines
+    lines
   end
 end

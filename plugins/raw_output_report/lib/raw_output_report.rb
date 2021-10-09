@@ -14,17 +14,19 @@ class RawOutputReport < Plugin
   private
 
   def strip_output(raw_output)
-    output = ""
+    output = ''
     raw_output.each_line do |line|
       next if line =~ /^\n$/
       next if line =~ /^.*:\d+:.*:(IGNORE|PASS|FAIL)/
-      return output if line =~/^-----------------------\n$/
+      return output if line =~ /^-----------------------\n$/
+
       output << line
     end
   end
+
   def write_raw_output_log(arg_hash, output)
     logging = generate_log_path(arg_hash)
-    @ceedling[:file_wrapper].write(logging[:path], output , logging[:flags]) unless logging.nil?
+    @ceedling[:file_wrapper].write(logging[:path], output, logging[:flags]) unless logging.nil?
   end
 
   def generate_log_path(arg_hash)
@@ -32,9 +34,7 @@ class RawOutputReport < Plugin
     base_path = File.join(PROJECT_BUILD_ARTIFACTS_ROOT, arg_hash[:context].to_s)
     file_path = File.join(base_path, f_name + '.log')
 
-    if @ceedling[:file_wrapper].exist?(base_path)
-      return { path: file_path, flags: 'w' }
-    end
+    return { path: file_path, flags: 'w' } if @ceedling[:file_wrapper].exist?(base_path)
 
     nil
   end

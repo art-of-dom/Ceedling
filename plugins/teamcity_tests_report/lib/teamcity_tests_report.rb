@@ -2,7 +2,6 @@ require 'ceedling/plugin'
 require 'ceedling/defaults'
 
 class TeamcityTestsReport < Plugin
-
   def setup
     @suite_started = nil
     @output_enabled = !defined?(TEAMCITY_BUILD) || TEAMCITY_BUILD
@@ -51,7 +50,6 @@ class TeamcityTestsReport < Plugin
   end
 
   def teamcity_message(content)
-    puts "##teamcity[#{content}]" unless !@output_enabled
+    puts "##teamcity[#{content}]" if @output_enabled
   end
-
 end

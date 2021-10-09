@@ -3,7 +3,6 @@ require 'rake' # for ext()
 require 'fileutils'
 require 'ceedling/constants'
 
-
 # :flags:
 #   :release:
 #     :compile:
@@ -24,51 +23,49 @@ def partition(hash, &predicate)
 end
 
 class Flaginator
-
   constructor :configurator
 
   def get_flag(hash, file_name)
     file_key = file_name.to_sym
-   
+
     # 1. try literals
-    literals, magic = partition(hash) { |k, v| k.to_s =~ /^\w+$/ }  
+    literals, magic = partition(hash) { |k, _v| k.to_s =~ /^\w+$/ }
     return literals[file_key] if literals.include?(file_key)
-    
-    any, regex = partition(magic) { |k, v| (k == :'*') || (k == :'.*')  } # glob or regex wild card
-    
+
+    any, regex = partition(magic) { |k, _v| (k == :*) || (k == :'.*') } # glob or regex wild card
+
     # 2. try regexes
-    find_res = regex.find { |k, v| file_name =~ /^#{k.to_s}$/ }
+    find_res = regex.find { |k, _v| file_name =~ /^#{k}$/ }
     return find_res[1] if find_res
-    
+
     # 3. try anything
-    find_res = any.find { |k, v| file_name =~ /.*/ }
+    find_res = any.find { |_k, _v| file_name =~ /.*/ }
     return find_res[1] if find_res
-      
+
     # 4. well, we've tried
-    return []
+    []
   end
-  
-  def flag_down( operation, context, file )
+
+  def flag_down(operation, context, file)
     # create configurator accessor method
     accessor = ('flags_' + context.to_s).to_sym
 
     # create simple filename key from whatever filename provided
-    file_name = File.basename( file ).ext('')
-    file_key = File.basename( file ).ext('').to_sym
+    file_name = File.basename(file).ext('')
+    file_key = File.basename(file).ext('').to_sym
 
     # if no entry in configuration for flags for this context, bail out
-    return [] if not @configurator.respond_to?( accessor )
+    return [] unless @configurator.respond_to?(accessor)
 
     # get flags sub hash associated with this context
-    flags = @configurator.send( accessor )
+    flags = @configurator.send(accessor)
 
     # if operation not represented in flags hash, bail out
-    return [] if not flags.include?( operation )
+    return [] unless flags.include?(operation)
 
     # redefine flags to sub hash associated with the operation
     flags = flags[operation]
 
-    return get_flag(flags, file_name)
+    get_flag(flags, file_name)
   end
-
 end

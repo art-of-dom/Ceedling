@@ -7,7 +7,7 @@ module Ceedling
   # === Return
   # _String_ - The location where the gem lives.
   def self.location
-    File.join( File.dirname(__FILE__), '..')
+    File.join(File.dirname(__FILE__), '..')
   end
 
   ##
@@ -15,7 +15,7 @@ module Ceedling
   # === Return
   # _String_ - The path where the default plugins live.
   def self.load_path
-    File.join( self.location, 'plugins')
+    File.join(location, 'plugins')
   end
 
   ##
@@ -23,7 +23,7 @@ module Ceedling
   # === Return
   # _String_
   def self.rakefile
-    File.join( self.location, 'lib', 'ceedling', 'rakefile.rb' )
+    File.join(location, 'lib', 'ceedling', 'rakefile.rb')
   end
 
   ##
@@ -55,7 +55,7 @@ module Ceedling
     # Register the plugins
     if options.has_key? :plugins
       options[:plugins].each do |plugin|
-        register_plugin( plugin, options[:prefix] )
+        register_plugin(plugin, options[:prefix])
       end
     end
 
@@ -63,7 +63,7 @@ module Ceedling
     Object.const_set('PROJECT_ROOT', options[:root]) if options.has_key? :root
 
     # Load ceedling
-    load "#{self.rakefile}"
+    load rakefile.to_s
   end
 
   ##
@@ -84,7 +84,7 @@ module Ceedling
   # +name+ _String_:: The name of the plugin to load.
   # +prefix+ _String_::
   #   (optional, default = nil) The prefix to use for the full gem name.
-  def self.register_plugin(name, prefix=nil)
+  def self.register_plugin(name, prefix = nil)
     # Figure out the full name of the gem and location
     prefix   ||= 'ceedling-'
     gem_name   = prefix + name
@@ -96,4 +96,3 @@ module Ceedling
     DEFAULT_CEEDLING_CONFIG[:plugins][:load_paths] << gem_dir
   end
 end
-

@@ -22,7 +22,7 @@ class Gcov < Plugin
   end
 
   def generate_coverage_object_file(source, object)
-    lib_args = @ceedling[:test_invoker].convert_libraries_to_arguments()
+    lib_args = @ceedling[:test_invoker].convert_libraries_to_arguments
     compile_command =
       @ceedling[:tool_executor].build_command_line(
         TOOLS_GCOV_COMPILER,
@@ -98,7 +98,7 @@ class Gcov < Plugin
     ignore_path_list = @ceedling[:file_system_utils].collect_paths(@ceedling[:configurator].project_config_hash[:gcov_uncovered_ignore_list] || [])
     ignore_uncovered_list = @ceedling[:file_wrapper].instantiate_file_list
     ignore_path_list.each do |path|
-      if File.exists?(path) and not File.directory?(path)
+      if File.exist?(path) and !File.directory?(path)
         ignore_uncovered_list.include(path)
       else
         ignore_uncovered_list.include(File.join(path, "*#{EXTENSION_SOURCE}"))
@@ -107,30 +107,30 @@ class Gcov < Plugin
 
     found_uncovered = false
     COLLECTION_ALL_SOURCE.each do |source|
-      unless coverage_sources.include?(source)
-        v = Verbosity::DEBUG
-        msg = "Could not find coverage results for " + source
-        if ignore_uncovered_list.include?(source)
-          msg += " [IGNORED]"
-        else
-          found_uncovered = true
-          v = Verbosity::NORMAL
-        end
-        msg += "\n"
-        @ceedling[:streaminator].stdout_puts(msg, v)
+      next if coverage_sources.include?(source)
+
+      v = Verbosity::DEBUG
+      msg = 'Could not find coverage results for ' + source
+      if ignore_uncovered_list.include?(source)
+        msg += ' [IGNORED]'
+      else
+        found_uncovered = true
+        v = Verbosity::NORMAL
       end
+      msg += "\n"
+      @ceedling[:streaminator].stdout_puts(msg, v)
     end
-    if found_uncovered
-      if @ceedling[:configurator].project_config_hash[:gcov_abort_on_uncovered]
-        @ceedling[:streaminator].stderr_puts("There were files with no coverage results: aborting.\n")
-        exit(-1)
-      end
+    if found_uncovered && @ceedling[:configurator].project_config_hash[:gcov_abort_on_uncovered]
+      @ceedling[:streaminator].stderr_puts("There were files with no coverage results: aborting.\n")
+      exit(-1)
     end
   end
 end
 
 # end blocks always executed following rake run
-END {
+at_exit do
   # cache our input configurations to use in comparison upon next execution
-  @ceedling[:cacheinator].cache_test_config(@ceedling[:setupinator].config_hash) if @ceedling[:task_invoker].invoked?(/^#{GCOV_TASK_ROOT}/)
-}
+  if @ceedling[:task_invoker].invoked?(/^#{GCOV_TASK_ROOT}/)
+    @ceedling[:cacheinator].cache_test_config(@ceedling[:setupinator].config_hash)
+  end
+end

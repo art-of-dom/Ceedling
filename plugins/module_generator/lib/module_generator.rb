@@ -4,67 +4,81 @@ require 'erb'
 require 'fileutils'
 
 class ModuleGenerator < Plugin
-
   attr_reader :config
 
-  def create(module_name, optz={})
+  def create(module_name, optz = {})
+    require 'generate_module' # From Unity Scripts
 
-    require "generate_module.rb" #From Unity Scripts
-
-    if ((!optz.nil?) && (optz[:destroy]))
-      UnityModuleGenerator.new( divine_options(optz) ).destroy(module_name)
+    if !optz.nil? && (optz[:destroy])
+      UnityModuleGenerator.new(divine_options(optz)).destroy(module_name)
     else
-      UnityModuleGenerator.new( divine_options(optz) ).generate(module_name)
+      UnityModuleGenerator.new(divine_options(optz)).generate(module_name)
     end
   end
 
-  def stub_from_header(module_name, optz={})
-    require "cmock.rb" #From CMock
+  def stub_from_header(module_name, optz = {})
+    require 'cmock' # From CMock
     stuboptz = divine_options(optz)
-    pathname = optz[:path_inc] || optz[:path_src] || "src"
-    filename = File.expand_path(optz[:module_root_path], File.join(pathname, module_name + ".h"))
+    pathname = optz[:path_inc] || optz[:path_src] || 'src'
+    filename = File.expand_path(optz[:module_root_path], File.join(pathname, module_name + '.h'))
     CMock.new(stuboptz).setup_skeletons(filename)
   end
 
   private
 
-  def divine_options(optz={})
+  def divine_options(optz = {})
     unity_generator_options =
-    {
-      :path_src     => ((defined? MODULE_GENERATOR_SOURCE_ROOT ) ? MODULE_GENERATOR_SOURCE_ROOT.gsub('\\', '/').sub(/^\//, '').sub(/\/$/, '') : "src" ),
-      :path_inc     => ((defined? MODULE_GENERATOR_INC_ROOT ) ?
-                                 MODULE_GENERATOR_INC_ROOT.gsub('\\', '/').sub(/^\//, '').sub(/\/$/, '')
-                                 : (defined? MODULE_GENERATOR_SOURCE_ROOT ) ?
-                                 MODULE_GENERATOR_SOURCE_ROOT.gsub('\\', '/').sub(/^\//, '').sub(/\/$/, '')
-                                 : "src" ),
-      :path_tst     => ((defined? MODULE_GENERATOR_TEST_ROOT   ) ? MODULE_GENERATOR_TEST_ROOT.gsub(  '\\', '/').sub(/^\//, '').sub(/\/$/, '') : "test" ),
-      :pattern      => optz[:pattern],
-      :test_prefix  => ((defined? PROJECT_TEST_FILE_PREFIX     ) ? PROJECT_TEST_FILE_PREFIX : "Test" ),
-      :mock_prefix  => ((defined? CMOCK_MOCK_PREFIX            ) ? CMOCK_MOCK_PREFIX : "Mock" ),
-      :includes     => ((defined? MODULE_GENERATOR_INCLUDES    ) ? MODULE_GENERATOR_INCLUDES : {} ),
-      :boilerplates => ((defined? MODULE_GENERATOR_BOILERPLATES) ? MODULE_GENERATOR_BOILERPLATES : {} ),
-      :naming       => ((defined? MODULE_GENERATOR_NAMING      ) ? MODULE_GENERATOR_NAMING : nil ),
-      :update_svn   => ((defined? MODULE_GENERATOR_UPDATE_SVN  ) ? MODULE_GENERATOR_UPDATE_SVN : false ),
-      :skeleton_path=> ((defined? MODULE_GENERATOR_SOURCE_ROOT ) ? MODULE_GENERATOR_SOURCE_ROOT.gsub('\\', '/').sub(/^\//, '').sub(/\/$/, '') : "src" ),
-      :test_define  => ((defined? MODULE_GENERATOR_TEST_DEFINE ) ? MODULE_GENERATOR_TEST_DEFINE : "TEST" ),
-    }
+      {
+        path_src: (if defined? MODULE_GENERATOR_SOURCE_ROOT
+                     MODULE_GENERATOR_SOURCE_ROOT.gsub('\\', '/').sub(%r{^/}, '').sub(
+                       %r{/$}, ''
+                     )
+                   else
+                     'src'
+                   end),
+        path_inc: (if defined? MODULE_GENERATOR_INC_ROOT
+                     MODULE_GENERATOR_INC_ROOT.gsub('\\', '/').sub(%r{^/}, '').sub(%r{/$}, '')
+                   elsif defined? MODULE_GENERATOR_SOURCE_ROOT
+                     MODULE_GENERATOR_SOURCE_ROOT.gsub('\\', '/').sub(%r{^/}, '').sub(
+                       %r{/$}, ''
+                     )
+                   else
+                     'src'
+                   end),
+        path_tst: (if defined? MODULE_GENERATOR_TEST_ROOT
+                     MODULE_GENERATOR_TEST_ROOT.gsub('\\', '/').sub(%r{^/}, '').sub(
+                       %r{/$}, ''
+                     )
+                   else
+                     'test'
+                   end),
+        pattern: optz[:pattern],
+        test_prefix: ((defined? PROJECT_TEST_FILE_PREFIX) ? PROJECT_TEST_FILE_PREFIX : 'Test'),
+        mock_prefix: ((defined? CMOCK_MOCK_PREFIX) ? CMOCK_MOCK_PREFIX : 'Mock'),
+        includes: ((defined? MODULE_GENERATOR_INCLUDES) ? MODULE_GENERATOR_INCLUDES : {}),
+        boilerplates: ((defined? MODULE_GENERATOR_BOILERPLATES) ? MODULE_GENERATOR_BOILERPLATES : {}),
+        naming: ((defined? MODULE_GENERATOR_NAMING) ? MODULE_GENERATOR_NAMING : nil),
+        update_svn: ((defined? MODULE_GENERATOR_UPDATE_SVN) ? MODULE_GENERATOR_UPDATE_SVN : false),
+        skeleton_path: (if defined? MODULE_GENERATOR_SOURCE_ROOT
+                          MODULE_GENERATOR_SOURCE_ROOT.gsub('\\', '/').sub(%r{^/}, '').sub(
+                            %r{/$}, ''
+                          )
+                        else
+                          'src'
+                        end),
+        test_define: ((defined? MODULE_GENERATOR_TEST_DEFINE) ? MODULE_GENERATOR_TEST_DEFINE : 'TEST')
+      }
 
     # Read Boilerplate template file.
-    if (defined? MODULE_GENERATOR_BOILERPLATE_FILES)
+    if defined? MODULE_GENERATOR_BOILERPLATE_FILES
 
       bf = MODULE_GENERATOR_BOILERPLATE_FILES
 
-      if !bf[:src].nil? && File.exists?(bf[:src])
-        unity_generator_options[:boilerplates][:src] = File.read(bf[:src])
-      end
+      unity_generator_options[:boilerplates][:src] = File.read(bf[:src]) if !bf[:src].nil? && File.exist?(bf[:src])
 
-      if !bf[:inc].nil? && File.exists?(bf[:inc])
-        unity_generator_options[:boilerplates][:inc] = File.read(bf[:inc])
-      end
+      unity_generator_options[:boilerplates][:inc] = File.read(bf[:inc]) if !bf[:inc].nil? && File.exist?(bf[:inc])
 
-      if !bf[:tst].nil? && File.exists?(bf[:tst])
-        unity_generator_options[:boilerplates][:tst] = File.read(bf[:tst])
-      end
+      unity_generator_options[:boilerplates][:tst] = File.read(bf[:tst]) if !bf[:tst].nil? && File.exist?(bf[:tst])
     end
 
     # If using "create[<module_root>:<module_name>]" option from command line.
@@ -74,7 +88,6 @@ class ModuleGenerator < Plugin
       unity_generator_options[:path_tst] = File.join(optz[:module_root_path], unity_generator_options[:path_tst])
     end
 
-    return unity_generator_options
+    unity_generator_options
   end
-
 end

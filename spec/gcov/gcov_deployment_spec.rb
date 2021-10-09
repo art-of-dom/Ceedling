@@ -1,8 +1,8 @@
 require 'spec_system_helper'
 require 'gcov/gcov_test_cases_spec'
 
-describe "Ceedling" do
-  describe "Gcov" do
+describe 'Ceedling' do
+  describe 'Gcov' do
     include CeedlingTestCases
     include GcovTestCases
     before :all do
@@ -14,10 +14,10 @@ describe "Ceedling" do
       @c.done!
     end
 
-    before { @proj_name = "fake_project" }
+    before { @proj_name = 'fake_project' }
     after { @c.with_context { FileUtils.rm_rf @proj_name } }
 
-    describe "basic operations" do
+    describe 'basic operations' do
       before do
         @c.with_context do
           `bundle exec ruby -S ceedling new --local #{@proj_name} 2>&1`
@@ -34,9 +34,8 @@ describe "Ceedling" do
       it { can_create_html_report }
     end
 
-
-    describe "command: `ceedling example [example]`" do
-      describe "temp_sensor" do
+    describe 'command: `ceedling example [example]`' do
+      describe 'temp_sensor' do
         before do
           @c.with_context do
             output = `bundle exec ruby -S ceedling example temp_sensor 2>&1`
@@ -44,9 +43,9 @@ describe "Ceedling" do
           end
         end
 
-        it "should be testable" do
+        it 'should be testable' do
           @c.with_context do
-            Dir.chdir "temp_sensor" do
+            Dir.chdir 'temp_sensor' do
               @output = `bundle exec ruby -S ceedling gcov:all 2>&1`
               expect(@output).to match(/TESTED:\s+47/)
               expect(@output).to match(/PASSED:\s+47/)
@@ -61,9 +60,8 @@ describe "Ceedling" do
 
               @output = `bundle exec ruby -S ceedling utils:gcov`
               expect(@output).to match(/For now, creating only an HtmlBasic report\./)
-              expect(@output).to match(/Creating (?:a )?gcov (?:results)?(?:HTML)? report(?:\(s\))? in 'build\/artifacts\/gcov'\.\.\. Done/)
-              expect(File.exists?('build/artifacts/gcov/GcovCoverageResults.html')).to eq true
-
+              expect(@output).to match(%r{Creating (?:a )?gcov (?:results)?(?:HTML)? report(?:\(s\))? in 'build/artifacts/gcov'\.\.\. Done})
+              expect(File.exist?('build/artifacts/gcov/GcovCoverageResults.html')).to eq true
             end
           end
         end
