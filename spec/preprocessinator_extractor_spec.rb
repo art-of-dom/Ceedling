@@ -4,9 +4,9 @@ require 'spec_helper'
 require 'ceedling/preprocessinator_extractor'
 
 describe PreprocessinatorExtractor do
-  context "#extract_base_file_from_preprocessed_expansion" do
-    it "should extract text from the original file and keep #pragma statements" do
-      file_path = "path/to/WANT.c"
+  context '#extract_base_file_from_preprocessed_expansion' do
+    it 'should extract text from the original file and keep #pragma statements' do
+      file_path = 'path/to/WANT.c'
       input_str = [
         '# 1 "some/file/we/do/not/care/about.c" 5',
         '#pragma shit',
@@ -21,7 +21,7 @@ describe PreprocessinatorExtractor do
         'a set of junk',
         'more junk',
         '# 1 "holy/shoot/yes/WANT.c" 10',
-        'some_additional_awesome_want_text();',
+        'some_additional_awesome_want_text();'
       ]
 
       expect_str = [
@@ -29,10 +29,10 @@ describe PreprocessinatorExtractor do
         '#pragma want',
         'some_awesome_text_we_want_so_hard();',
         'holy_crepes_more_awesome_text();',
-        'some_additional_awesome_want_text();',
+        'some_additional_awesome_want_text();'
       ]
 
-      expect(File).to receive(:readlines).with(file_path).and_return( input_str )
+      expect(File).to receive(:readlines).with(file_path).and_return(input_str)
 
       expect(subject.extract_base_file_from_preprocessed_expansion(file_path)).to eq expect_str
     end
@@ -43,9 +43,9 @@ describe PreprocessinatorExtractor do
     # # xit "should ignore whitespace"
   end
 
-  context "#extract_base_file_from_preprocessed_directives" do
+  context '#extract_base_file_from_preprocessed_directives' do
     it "should extract last chunk of text after last '#'line containing file name of our filepath" do
-      file_path = "path/to/WANT.c"
+      file_path = 'path/to/WANT.c'
       input_str = [
         '# 1 "some/file/we/do/not/care/about.c" 5',
         '#pragma trash',
@@ -62,7 +62,7 @@ describe PreprocessinatorExtractor do
         '#define INCREDIBLE_DEFINE 911',
         'some_additional_awesome_want_text();',
         'holy_crepes_more_awesome_text();',
-        '# oh darn',
+        '# oh darn'
       ]
 
       expect_str = [
@@ -70,10 +70,10 @@ describe PreprocessinatorExtractor do
         '#define INCREDIBLE_DEFINE 911',
         'some_additional_awesome_want_text();',
         'holy_crepes_more_awesome_text();',
-        '# oh darn',
+        '# oh darn'
       ]
 
-      expect(File).to receive(:readlines).with(file_path).and_return( input_str )
+      expect(File).to receive(:readlines).with(file_path).and_return(input_str)
 
       expect(subject.extract_base_file_from_preprocessed_directives(file_path)).to eq expect_str
     end

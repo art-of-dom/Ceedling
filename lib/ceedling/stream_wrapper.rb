@@ -1,6 +1,4 @@
-
 class StreamWrapper
-
   def stdout_override(&fnc)
     @stdout_overide_fnc = fnc
   end
@@ -16,13 +14,12 @@ class StreamWrapper
   def stdout_flush
     $stdout.flush
   end
-  
+
   def stderr_puts(string)
-    $stderr.puts(string)
+    warn(string)
   end
 
   def stderr_flush
     $stderr.flush
   end
-
 end

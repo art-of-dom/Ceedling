@@ -1,25 +1,22 @@
 module TargetLoader
-  class NoTargets    < Exception; end
-  class NoDirectory  < Exception; end
-  class NoDefault    < Exception; end
-  class NoSuchTarget < Exception; end
+  class NoTargets    < RuntimeError; end
 
-  class RequestReload < Exception; end
+  class NoDirectory  < RuntimeError; end
 
-  def self.inspect(config, target_name=nil)
-    unless config[:targets]
-      raise NoTargets
-    end
+  class NoDefault    < RuntimeError; end
+
+  class NoSuchTarget < RuntimeError; end
+
+  class RequestReload < RuntimeError; end
+
+  def self.inspect(config, target_name = nil)
+    raise NoTargets unless config[:targets]
 
     targets = config[:targets]
-    unless targets[:targets_directory]
-      raise NoDirectory.new("No targets directory specified.")
-    end
-    unless targets[:default_target]
-      raise NoDefault.new("No default target specified.")
-    end
+    raise NoDirectory, 'No targets directory specified.' unless targets[:targets_directory]
+    raise NoDefault, 'No default target specified.' unless targets[:default_target]
 
-    target_path = lambda {|name| File.join(targets[:targets_directory], name + ".yml")}
+    target_path = ->(name) { File.join(targets[:targets_directory], name + '.yml') }
 
     target = if target_name
                target_path.call(target_name)
@@ -27,9 +24,7 @@ module TargetLoader
                target_path.call(targets[:default_target])
              end
 
-    unless File.exists? target
-      raise NoSuchTarget.new("No such target: #{target}")
-    end
+    raise NoSuchTarget, "No such target: #{target}" unless File.exist? target
 
     ENV['CEEDLING_MAIN_PROJECT_FILE'] = target
 

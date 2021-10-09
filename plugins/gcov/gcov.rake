@@ -13,13 +13,14 @@ CLEAN.include(File.join(GCOV_DEPENDENCIES_PATH, '*'))
 
 CLOBBER.include(File.join(GCOV_BUILD_PATH, '**/*'))
 
-rule(/#{GCOV_BUILD_OUTPUT_PATH}\/#{'.+\\' + EXTENSION_OBJECT}$/ => [
+rule(%r{#{GCOV_BUILD_OUTPUT_PATH}/#{'.+\\' + EXTENSION_OBJECT}$} => [
        proc do |task_name|
          @ceedling[:file_finder].find_compilation_input_file(task_name)
        end
      ]) do |object|
-
-  if File.basename(object.source) =~ /^(#{PROJECT_TEST_FILE_PREFIX}|#{CMOCK_MOCK_PREFIX})|(#{VENDORS_FILES.map{|source| '\b' + source + '\b'}.join('|')})/
+  if File.basename(object.source) =~ /^(#{PROJECT_TEST_FILE_PREFIX}|#{CMOCK_MOCK_PREFIX})|(#{VENDORS_FILES.map do |source|
+                                                                                               '\b' + source + '\b'
+                                                                                             end.join('|')})/
     @ceedling[:generator].generate_object_file(
       TOOLS_GCOV_COMPILER,
       OPERATION_COMPILE_SYM,
@@ -33,9 +34,9 @@ rule(/#{GCOV_BUILD_OUTPUT_PATH}\/#{'.+\\' + EXTENSION_OBJECT}$/ => [
   end
 end
 
-rule(/#{GCOV_BUILD_OUTPUT_PATH}\/#{'.+\\' + EXTENSION_EXECUTABLE}$/) do |bin_file|
-  lib_args = @ceedling[:test_invoker].convert_libraries_to_arguments()
-  lib_paths = @ceedling[:test_invoker].get_library_paths_to_arguments()
+rule(%r{#{GCOV_BUILD_OUTPUT_PATH}/#{'.+\\' + EXTENSION_EXECUTABLE}$}) do |bin_file|
+  lib_args = @ceedling[:test_invoker].convert_libraries_to_arguments
+  lib_paths = @ceedling[:test_invoker].get_library_paths_to_arguments
   @ceedling[:generator].generate_executable_file(
     TOOLS_GCOV_LINKER,
     GCOV_SYM,
@@ -47,7 +48,7 @@ rule(/#{GCOV_BUILD_OUTPUT_PATH}\/#{'.+\\' + EXTENSION_EXECUTABLE}$/) do |bin_fil
   )
 end
 
-rule(/#{GCOV_RESULTS_PATH}\/#{'.+\\' + EXTENSION_TESTPASS}$/ => [
+rule(%r{#{GCOV_RESULTS_PATH}/#{'.+\\' + EXTENSION_TESTPASS}$} => [
        proc do |task_name|
          @ceedling[:file_path_utils].form_test_executable_filepath(task_name)
        end
@@ -55,7 +56,7 @@ rule(/#{GCOV_RESULTS_PATH}\/#{'.+\\' + EXTENSION_TESTPASS}$/ => [
   @ceedling[:generator].generate_test_results(TOOLS_GCOV_FIXTURE, GCOV_SYM, test_result.source, test_result.name)
 end
 
-rule(/#{GCOV_DEPENDENCIES_PATH}\/#{'.+\\' + EXTENSION_DEPENDENCIES}$/ => [
+rule(%r{#{GCOV_DEPENDENCIES_PATH}/#{'.+\\' + EXTENSION_DEPENDENCIES}$} => [
        proc do |task_name|
          @ceedling[:file_finder].find_compilation_input_file(task_name)
        end
@@ -98,12 +99,12 @@ namespace GCOV_SYM do
       matches << test if test =~ /#{args.regex}/
     end
 
-    if !matches.empty?
+    if matches.empty?
+      @ceedling[:streaminator].stdout_puts("\nFound no tests matching pattern /#{args.regex}/.")
+    else
       @ceedling[:configurator].replace_flattened_config(@ceedling[GCOV_SYM].config)
       @ceedling[:test_invoker].setup_and_invoke(matches, GCOV_SYM, force_run: false)
       @ceedling[:configurator].restore_config
-    else
-      @ceedling[:streaminator].stdout_puts("\nFound no tests matching pattern /#{args.regex}/.")
     end
   end
 
@@ -115,12 +116,12 @@ namespace GCOV_SYM do
       matches << test if File.dirname(test).include?(args.dir.tr('\\', '/'))
     end
 
-    if !matches.empty?
+    if matches.empty?
+      @ceedling[:streaminator].stdout_puts("\nFound no tests including the given path or path component.")
+    else
       @ceedling[:configurator].replace_flattened_config(@ceedling[GCOV_SYM].config)
       @ceedling[:test_invoker].setup_and_invoke(matches, GCOV_SYM, force_run: false)
       @ceedling[:configurator].restore_config
-    else
-      @ceedling[:streaminator].stdout_puts("\nFound no tests including the given path or path component.")
     end
   end
 
@@ -159,15 +160,14 @@ end
 
 namespace UTILS_SYM do
   # Report Creation Utilities
-  UTILITY_NAME_GCOVR = "gcovr"
-  UTILITY_NAME_REPORT_GENERATOR = "ReportGenerator"
+  UTILITY_NAME_GCOVR = 'gcovr'
+  UTILITY_NAME_REPORT_GENERATOR = 'ReportGenerator'
   UTILITY_NAMES = [UTILITY_NAME_GCOVR, UTILITY_NAME_REPORT_GENERATOR]
 
   # Returns true is the given utility is enabled, otherwise returns false.
   def is_utility_enabled(opts, utility_name)
-    return !(opts.nil?) && !(opts[:gcov_utilities].nil?) && (opts[:gcov_utilities].map(&:upcase).include? utility_name.upcase)
+    !opts.nil? && !opts[:gcov_utilities].nil? && (opts[:gcov_utilities].map(&:upcase).include? utility_name.upcase)
   end
-
 
   desc "Create gcov code coverage html/xml/json/text report(s). (Note: Must run 'ceedling gcov' first)."
   task GCOV_SYM do
@@ -175,35 +175,26 @@ namespace UTILS_SYM do
     opts = @ceedling[:configurator].project_config_hash
 
     # Create the artifacts output directory.
-    if !File.directory? GCOV_ARTIFACTS_PATH
-      FileUtils.mkdir_p GCOV_ARTIFACTS_PATH
-    end
+    FileUtils.mkdir_p GCOV_ARTIFACTS_PATH unless File.directory? GCOV_ARTIFACTS_PATH
 
     # Remove unsupported reporting utilities.
-    if !(opts[:gcov_utilities].nil?)
+    unless opts[:gcov_utilities].nil?
       opts[:gcov_utilities].reject! { |item| !(UTILITY_NAMES.map(&:upcase).include? item.upcase) }
     end
 
     # Default to gcovr when no reporting utilities are specified.
-    if opts[:gcov_utilities].nil? || opts[:gcov_utilities].empty?
-      opts[:gcov_utilities] = [UTILITY_NAME_GCOVR]
-    end
+    opts[:gcov_utilities] = [UTILITY_NAME_GCOVR] if opts[:gcov_utilities].nil? || opts[:gcov_utilities].empty?
 
-    if opts[:gcov_reports].nil?
-      opts[:gcov_reports] = []
-    end
+    opts[:gcov_reports] = [] if opts[:gcov_reports].nil?
 
     gcovr_reportinator = GcovrReportinator.new(@ceedling)
     gcovr_reportinator.support_deprecated_options(opts)
 
-    if is_utility_enabled(opts, UTILITY_NAME_GCOVR)
-      gcovr_reportinator.make_reports(opts)
-    end
+    gcovr_reportinator.make_reports(opts) if is_utility_enabled(opts, UTILITY_NAME_GCOVR)
 
     if is_utility_enabled(opts, UTILITY_NAME_REPORT_GENERATOR)
       reportgenerator_reportinator = ReportGeneratorReportinator.new(@ceedling)
       reportgenerator_reportinator.make_reports(opts)
     end
-
   end
 end

@@ -10,7 +10,7 @@ here = File.dirname(__FILE__)
 $: << File.join(here, '../lib')
 $: << File.join(here, '../vendor/cmock/lib')
 
-support_files = File.join(File.dirname(__FILE__), "support/**/*.rb")
+support_files = File.join(File.dirname(__FILE__), 'support/**/*.rb')
 require_all Dir.glob(support_files, File::FNM_PATHNAME)
 support_dir = File.join(File.dirname(__FILE__), 'support')
 
@@ -22,5 +22,3 @@ support_dir = File.join(File.dirname(__FILE__), 'support')
 require 'ceedling/preprocessinator_extractor'
 require 'ceedling/configurator_builder'
 require 'ceedling/configurator'
-
-

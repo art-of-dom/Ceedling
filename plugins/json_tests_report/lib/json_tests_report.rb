@@ -21,19 +21,21 @@ class JsonTestsReport < Plugin
       results = @ceedling[:plugin_reportinator].assemble_test_results(@results_list[context])
 
       artifact_filename = @ceedling[:configurator].project_config_hash[:json_tests_report_artifact_filename] || 'report.json'
-      artifact_fullpath = @ceedling[:configurator].project_config_hash[:json_tests_report_path] || File.join(PROJECT_BUILD_ARTIFACTS_ROOT, context.to_s)
+      artifact_fullpath = @ceedling[:configurator].project_config_hash[:json_tests_report_path] || File.join(
+        PROJECT_BUILD_ARTIFACTS_ROOT, context.to_s
+      )
       file_path = File.join(artifact_fullpath, artifact_filename)
 
       @ceedling[:file_wrapper].open(file_path, 'w') do |f|
         @test_counter = 1
 
         json = {
-          "FailedTests" => write_failures(results[:failures]),
-          "PassedTests" => write_tests(results[:successes]),
-          "IgnoredTests" => write_tests(results[:ignores]),
-          "Summary" => write_statistics(results[:counts])
+          'FailedTests' => write_failures(results[:failures]),
+          'PassedTests' => write_tests(results[:successes]),
+          'IgnoredTests' => write_tests(results[:ignores]),
+          'Summary' => write_statistics(results[:counts])
         }
-        
+
         f << JSON.pretty_generate(json)
       end
     end
@@ -47,14 +49,14 @@ class JsonTestsReport < Plugin
       result[:collection].each do |item|
         @test_counter += 1
         retval << {
-          "file" => File.join(result[:source][:path], result[:source][:file]),
-          "test" => item[:test],
-          "line" => item[:line],
-          "message" => item[:message]
+          'file' => File.join(result[:source][:path], result[:source][:file]),
+          'test' => item[:test],
+          'line' => item[:line],
+          'message' => item[:message]
         }
       end
     end
-    return retval.uniq
+    retval.uniq
   end
 
   def write_tests(results)
@@ -62,22 +64,21 @@ class JsonTestsReport < Plugin
     results.each do |result|
       result[:collection].each do |item|
         @test_counter += 1
-        retval << { 
-          "file" => File.join(result[:source][:path], result[:source][:file]),
-          "test" => item[:test]
+        retval << {
+          'file' => File.join(result[:source][:path], result[:source][:file]),
+          'test' => item[:test]
         }
       end
     end
-    return retval
+    retval
   end
 
   def write_statistics(counts)
-    return {
-      "total_tests" => counts[:total],
-      "passed" => (counts[:total] - counts[:ignored] - counts[:failed]),
-      "ignored" => counts[:ignored],
-      "failures" => counts[:failed]
+    {
+      'total_tests' => counts[:total],
+      'passed' => (counts[:total] - counts[:ignored] - counts[:failed]),
+      'ignored' => counts[:ignored],
+      'failures' => counts[:failed]
     }
   end
-
 end

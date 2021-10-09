@@ -1,7 +1,6 @@
 require 'ceedling/plugin'
 
 class PluginBuilder
-
   attr_accessor :plugin_objects
 
   def construct_plugin(plugin_name, object_map_yaml, system_objects)
@@ -19,13 +18,13 @@ class PluginBuilder
       raise "Invalid object map for plugin #{plugin_name}!"
     end
 
-    return @plugin_objects
+    @plugin_objects
   end
 
   private
-  
+
   def camelize(underscored_name)
-    return underscored_name.gsub(/(_|^)([a-z0-9])/) {$2.upcase}
+    underscored_name.gsub(/(_|^)([a-z0-9])/) { Regexp.last_match(2).upcase }
   end
 
   def construct_object(obj)
@@ -49,5 +48,4 @@ class PluginBuilder
       @plugin_objects[new_object.to_sym] = new_instance
     end
   end
-
 end

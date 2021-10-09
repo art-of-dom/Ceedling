@@ -1,10 +1,5 @@
-
 class FileSystemWrapper
-
-  def cd(path)
-    FileUtils.cd path do
-      yield
-    end
+  def cd(path, &block)
+    FileUtils.cd path, &block
   end
-
 end

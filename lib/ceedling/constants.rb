@@ -1,4 +1,3 @@
-
 class Verbosity
   SILENT      = 0  # as silent as possible (though there are some messages that must be spit out)
   ERRORS      = 1  # only errors
@@ -8,13 +7,11 @@ class Verbosity
   DEBUG       = 5  # special extra verbose output for hardcore debugging
 end
 
-
 class TestResultsSanityChecks
   NONE      = 0  # no sanity checking of test results
   NORMAL    = 1  # perform non-problematic checks
   THOROUGH  = 2  # perform checks that require inside knowledge of system workings
 end
-
 
 class StdErrRedirect
   NONE = :none
@@ -24,7 +21,6 @@ class StdErrRedirect
   TCSH = :tcsh
 end
 
-
 class BackgroundExec
   NONE = :none
   AUTO = :auto
@@ -32,15 +28,12 @@ class BackgroundExec
   UNIX = :unix
 end
 
-unless defined?(PROJECT_ROOT)
-  PROJECT_ROOT = Dir.pwd()
-end
+PROJECT_ROOT = Dir.pwd unless defined?(PROJECT_ROOT)
 
-GENERATED_DIR_PATH = [['vendor', 'ceedling'], 'src', "test", ['test', 'support'], 'build'].each{|p| File.join(*p)}
+GENERATED_DIR_PATH = [%w[vendor ceedling], 'src', 'test', %w[test support], 'build'].each { |p| File.join(*p) }
 
 EXTENSION_WIN_EXE    = '.exe'
 EXTENSION_NONWIN_EXE = '.out'
-
 
 CEXCEPTION_ROOT_PATH = 'c_exception'
 CEXCEPTION_LIB_PATH  = "#{CEXCEPTION_ROOT_PATH}/lib"
@@ -58,12 +51,19 @@ CMOCK_LIB_PATH  = "#{CMOCK_ROOT_PATH}/src"
 CMOCK_C_FILE    = 'cmock.c'
 CMOCK_H_FILE    = 'cmock.h'
 
+unless defined?(DEFAULT_CEEDLING_MAIN_PROJECT_FILE)
+  DEFAULT_CEEDLING_MAIN_PROJECT_FILE = 'project.yml'
+end # main project file
+unless defined?(DEFAULT_CEEDLING_USER_PROJECT_FILE)
+  DEFAULT_CEEDLING_USER_PROJECT_FILE = 'user.yml'
+end # supplemental user config file
 
-DEFAULT_CEEDLING_MAIN_PROJECT_FILE = 'project.yml' unless defined?(DEFAULT_CEEDLING_MAIN_PROJECT_FILE) # main project file
-DEFAULT_CEEDLING_USER_PROJECT_FILE = 'user.yml'    unless defined?(DEFAULT_CEEDLING_USER_PROJECT_FILE) # supplemental user config file
-
-INPUT_CONFIGURATION_CACHE_FILE     = 'input.yml'   unless defined?(INPUT_CONFIGURATION_CACHE_FILE)     # input configuration file dump
-DEFINES_DEPENDENCY_CACHE_FILE      = 'defines_dependency.yml' unless defined?(DEFINES_DEPENDENCY_CACHE_FILE) # preprocessor definitions for files
+unless defined?(INPUT_CONFIGURATION_CACHE_FILE)
+  INPUT_CONFIGURATION_CACHE_FILE     = 'input.yml'
+end # input configuration file dump
+unless defined?(DEFINES_DEPENDENCY_CACHE_FILE)
+  DEFINES_DEPENDENCY_CACHE_FILE      = 'defines_dependency.yml'
+end # preprocessor definitions for files
 
 TEST_ROOT_NAME    = 'test'                unless defined?(TEST_ROOT_NAME)
 TEST_TASK_ROOT    = TEST_ROOT_NAME + ':'  unless defined?(TEST_TASK_ROOT)
@@ -85,15 +85,14 @@ OPERATION_COMPILE_SYM  = :compile  unless defined?(OPERATION_COMPILE_SYM)
 OPERATION_ASSEMBLE_SYM = :assemble unless defined?(OPERATION_ASSEMBLE_SYM)
 OPERATION_LINK_SYM     = :link     unless defined?(OPERATION_LINK_SYM)
 
-
 RUBY_STRING_REPLACEMENT_PATTERN = /#\{.+\}/
 RUBY_EVAL_REPLACEMENT_PATTERN   = /^\{(.+)\}$/
 TOOL_EXECUTOR_ARGUMENT_REPLACEMENT_PATTERN = /(\$\{(\d+)\})/
-TEST_STDOUT_STATISTICS_PATTERN  = /\n-+\s*(\d+)\s+Tests\s+(\d+)\s+Failures\s+(\d+)\s+Ignored\s+(OK|FAIL)\s*/i
+TEST_STDOUT_STATISTICS_PATTERN = /\n-+\s*(\d+)\s+Tests\s+(\d+)\s+Failures\s+(\d+)\s+Ignored\s+(OK|FAIL)\s*/i
 
 NULL_FILE_PATH = '/dev/null'
 
 TESTS_BASE_PATH   = TEST_ROOT_NAME
 RELEASE_BASE_PATH = RELEASE_ROOT_NAME
 
-VENDORS_FILES = %w(unity UnityHelper cmock CException).freeze
+VENDORS_FILES = %w[unity UnityHelper cmock CException].freeze
