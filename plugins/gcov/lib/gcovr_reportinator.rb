@@ -151,7 +151,7 @@ class GcovrReportinator
             value = nil
           end
         end
-        args += "--#{opt.to_s.gsub('_','-')} #{value} " unless value.nil?
+        args += "--#{opt.to_s.tr('_','-')} #{value} " unless value.nil?
       end
     end
 
@@ -250,7 +250,7 @@ class GcovrReportinator
       args += "--html-encoding \"#{gcovr_opts[:html_encoding]}\" " unless gcovr_opts[:html_encoding].nil?
 
       [:html_medium_threshold, :html_high_threshold].each do |opt|
-        args += "--#{opt.to_s.gsub('_','-')} #{gcovr_opts[opt]} " unless gcovr_opts[opt].nil?
+        args += "--#{opt.to_s.tr('_','-')} #{gcovr_opts[opt]} " unless gcovr_opts[opt].nil?
       end
 
       # The following option must be appended last for gcovr version <= 4.2 to properly work.

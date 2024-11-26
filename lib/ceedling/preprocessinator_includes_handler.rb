@@ -91,20 +91,20 @@ class PreprocessinatorIncludesHandler
   def extract_includes_helper(filepath, include_paths, ignore_list, mocks)
     # Extract the dependencies from the make rule
     make_rule = self.form_shallow_dependencies_rule(filepath)
-    target_file = make_rule.split[0].gsub(':', '').gsub('\\','/')
+    target_file = make_rule.split[0].tr(':', '').tr('\\','/')
     base = File.basename(target_file, File.extname(target_file))
     make_rule_dependencies = make_rule.gsub(/.*\b#{Regexp.escape(base)}\S*/, '').gsub(/\\$/, '')
     
     # Extract the headers dependencies from the make rule
     hdr_ext = @configurator.extension_header
     headers_dependencies = make_rule_dependencies.split.find_all {|path| path.end_with?(hdr_ext) }.uniq
-    headers_dependencies.map! {|hdr| hdr.gsub('\\','/') }
+    headers_dependencies.map! {|hdr| hdr.tr('\\','/') }
     full_path_headers_dependencies = extract_full_path_dependencies(headers_dependencies)
 
     # Extract the sources dependencies from the make rule
     src_ext = @configurator.extension_source
     sources_dependencies = make_rule_dependencies.split.find_all {|path| path.end_with?(src_ext) }.uniq
-    sources_dependencies.map! {|src| src.gsub('\\','/') }
+    sources_dependencies.map! {|src| src.tr('\\','/') }
     full_path_sources_dependencies = extract_full_path_dependencies(sources_dependencies)
 
     list = full_path_headers_dependencies + full_path_sources_dependencies
